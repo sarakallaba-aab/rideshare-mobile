@@ -10,7 +10,6 @@ export default async function Kerkesa({
   const { id } = await params;
   const udhetim = gjejUdhetimin(id);
   if (!udhetim) notFound();
-
   return (
     <main>
       <Link href={`/udhetimi/${id}`}>← Kthehu te detajet</Link>

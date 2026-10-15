@@ -1,6 +1,6 @@
 
 import Link from "next/link";
-import type { Udhetim } from "@/types";
+import type { Udhetim } from "@/lib/udhetimet";
 
 export function KartaUdhetimi({ udhetim }: { udhetim: Udhetim }) {
   return (
