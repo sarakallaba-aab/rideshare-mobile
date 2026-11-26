@@ -19,6 +19,9 @@ export async function ruajFavorit(udhetimId: string) {
   `;
 
   if (ekziston.length === 0) return "nuk_gjendet";
+  if (process.env.SIMULO_DESHTIM_FAVORIT === "true") {
+  throw new Error("Dështim i simuluar para INSERT");
+}
 
   await sql`
     INSERT INTO favoritet (user_id, udhetim_id)

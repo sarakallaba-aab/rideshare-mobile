@@ -17,7 +17,9 @@ export default function Favoriti({
 }: Props) {
   const [ruajtur, setRuajtur] = useState(fillimishtRuajtur);
   const [numer, setNumer] = useState(fillimishtNumer);
-  const [mesazhi, setMesazhi] = useState("");
+  const [mesazhi, setMesazhi] = useState(
+    fillimishtRuajtur ? "I ruajtur" : ""
+  );
   const [dukeRuajtur, startTransition] = useTransition();
 
   function ruaj() {
@@ -28,14 +30,45 @@ export default function Favoriti({
     setMesazhi("Po ruhet…");
 
     startTransition(async () => {
-      const rezultati = await ruajFavoritin(udhetimId);
+      try {
+        // Testi 3 – simulimi i kërkesave të përsëritura
+        const [rezultati, rezultatiDyte] = await Promise.all([
+          ruajFavoritin(udhetimId),
+          ruajFavoritin(udhetimId),
+        ]);
 
-      if (rezultati.sukses) {
-        setMesazhi("I ruajtur");
-      } else {
+        console.log("Kërkesa 1:", rezultati);
+        console.log("Kërkesa 2:", rezultatiDyte);
+
+        if (rezultati.sukses || rezultatiDyte.sukses) {
+          setMesazhi("I ruajtur");
+        } else {
+          setRuajtur(false);
+          setNumer((v) => Math.max(0, v - 1));
+
+          const gabimet: Record<string, string> = {
+            hyr: "Nuk u identifikua përdoruesi. Kyçu përsëri.",
+            fushe: "ID-ja e udhëtimit nuk është valide.",
+            nuk_gjendet: "Udhëtimi nuk u gjet në databazë.",
+            databaza: "Ruajtja dështoi. Provo përsëri.",
+          };
+
+          setMesazhi(
+            gabimet[rezultati.mesazh ?? ""] ??
+              "Ruajtja dështoi. Provo përsëri."
+          );
+        }
+      } catch (error) {
         setRuajtur(false);
         setNumer((v) => Math.max(0, v - 1));
-        setMesazhi("Ruajtja dështoi. Provo përsëri.");
+        setMesazhi(
+          "Komunikimi me serverin dështoi. Provo përsëri."
+        );
+
+        console.error(
+          "Gabim gjatë komunikimit me serverin:",
+          error
+        );
       }
     });
   }
@@ -46,14 +79,25 @@ export default function Favoriti({
         type="button"
         onClick={ruaj}
         disabled={ruajtur || dukeRuajtur}
-        aria-label={ruajtur ? "Udhëtimi i ruajtur" : "Ruaj në të preferuara"}
+        aria-label={
+          ruajtur
+            ? "Udhëtimi i ruajtur"
+            : "Ruaj në të preferuara"
+        }
         aria-pressed={ruajtur}
       >
-        {ruajtur ? "★" : "☆"} Ruaj në të preferuara
+        {dukeRuajtur
+          ? "★ Po ruhet…"
+          : ruajtur
+          ? "★ I ruajtur"
+          : "☆ Ruaj në të preferuara"}
       </button>
 
       <p>Preferime: {numer}</p>
-      <p role="status" aria-live="polite">{mesazhi}</p>
+
+      <p role="status" aria-live="polite">
+        {mesazhi}
+      </p>
     </section>
   );
 }
